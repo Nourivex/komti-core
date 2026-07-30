@@ -1,8 +1,34 @@
-export function createVoice({ onStart, onEnd }) {
+export function createVoice({ onStart, onEnd, onSpeechResult }) {
     const synthesis = "speechSynthesis" in window ? window.speechSynthesis : null;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    let recognition = null;
     let enabled = true;
     let fallbackTimer = 0;
     let token = 0;
+
+    if (SpeechRecognition) {
+        try {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = "id-ID";
+
+            recognition.onresult = (event) => {
+                const text = event.results[0]?.[0]?.transcript;
+                if (text && typeof onSpeechResult === "function") {
+                    onSpeechResult(text);
+                }
+            };
+            recognition.onerror = () => {
+                // Ignore voice input errors silently
+            };
+            recognition.onend = () => {
+                // Reset listening state
+            };
+        } catch {
+            recognition = null;
+        }
+    }
 
     function chooseVoice() {
         if (!synthesis) return null;
@@ -22,9 +48,25 @@ export function createVoice({ onStart, onEnd }) {
 
     return {
         isSupported: Boolean(synthesis),
+        isMicSupported: Boolean(recognition),
         setEnabled(value) {
             enabled = value;
             if (!enabled) this.cancel();
+        },
+        listen() {
+            if (!recognition) return false;
+            try {
+                this.cancel();
+                recognition.start();
+                return true;
+            } catch {
+                return false;
+            }
+        },
+        stopListen() {
+            try {
+                recognition?.stop();
+            } catch { /* noop */ }
         },
         speak(text, rate = 1.02) {
             if (!enabled) return false;
@@ -49,6 +91,7 @@ export function createVoice({ onStart, onEnd }) {
         cancel() {
             token += 1;
             window.clearTimeout(fallbackTimer);
+            try { recognition?.stop(); } catch { /* noop */ }
             synthesis?.cancel();
             onEnd();
         },
@@ -57,3 +100,4 @@ export function createVoice({ onStart, onEnd }) {
         },
     };
 }
+

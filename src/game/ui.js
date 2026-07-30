@@ -195,6 +195,9 @@ export function createUI(mount) {
         <button class="icon-btn sound-btn" type="button" aria-label="Nonaktifkan suara" aria-pressed="true">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4Zm12.5-2.5a6 6 0 0 1 0 9M15 10a3 3 0 0 1 0 4"/></svg>
         </button>
+        <button class="icon-btn mic-btn" type="button" aria-label="Bicara lewat mikrofon" title="Bicara (Mikrofon)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8"/></svg>
+        </button>
         <label class="message-field">
           <span class="sr-only">Tulis pesan</span>
           <input type="text" maxlength="180" autocomplete="off" placeholder="Tanya TIKA… (ketik /atur untuk pengaturan)" disabled>
@@ -225,6 +228,7 @@ export function createUI(mount) {
     const input        = shell.querySelector("input");
     const sendButton   = shell.querySelector(".send-btn");
     const soundButton  = shell.querySelector(".sound-btn");
+    const micButton    = shell.querySelector(".mic-btn");
     const composer     = shell.querySelector(".composer");
     const suggestions  = shell.querySelector(".suggestion-row");
     const chatScroll   = shell.querySelector(".chat-scroll");
@@ -265,6 +269,15 @@ export function createUI(mount) {
         onSoundToggle(handler) {
             soundButton.addEventListener("click", handler);
         },
+        onMicClick(handler) {
+            micButton.addEventListener("click", handler);
+        },
+        setListening(listening) {
+            micButton.classList.toggle("is-listening", listening);
+        },
+        setInputValue(text) {
+            input.value = text;
+        },
         showReady(backgroundUrl) {
             stage.style.backgroundImage = `linear-gradient(180deg, rgba(9,9,11,0.04), rgba(9,9,11,0.22)), url("${backgroundUrl}")`;
             stage.hidden = false;
@@ -283,6 +296,7 @@ export function createUI(mount) {
             overlay.hidden = true;
             input.disabled = false;
             sendButton.disabled = false;
+            micButton.disabled = false;
             window.setTimeout(() => input.focus({ preventScroll: true }), 120);
         },
         setBusy(busy) {

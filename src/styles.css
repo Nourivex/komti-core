@@ -475,6 +475,28 @@ input:focus-visible {
   transform: rotate(-45deg);
 }
 
+.mic-btn {
+  color: #b8b8b8;
+  transition: all 0.25s ease;
+}
+
+.mic-btn:hover {
+  background: rgba(109, 23, 48, 0.25);
+  color: #b23a5a;
+}
+
+.mic-btn.is-listening {
+  color: #fff;
+  background: linear-gradient(135deg, #b23a5a, #f43f5e);
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.6);
+  animation: mic-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes mic-pulse {
+  from { transform: scale(1); box-shadow: 0 0 12px rgba(244, 63, 94, 0.5); }
+  to   { transform: scale(1.08); box-shadow: 0 0 24px rgba(244, 63, 94, 0.85); }
+}
+
 .send-btn {
   background: linear-gradient(135deg, #6d1730 0%, #8a1f3f 100%);
   box-shadow: 0 6px 22px rgba(109, 23, 48, 0.55);

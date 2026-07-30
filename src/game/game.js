@@ -96,6 +96,8 @@ export function createGame({ mount, sdk, tweaks, assets }) {
   return {
     start() {
       ui = createUI(mount);
+      let isListening = false;
+
       voice = createVoice({
         onStart: () => {
           avatar?.setMode("speaking");
@@ -104,6 +106,14 @@ export function createGame({ mount, sdk, tweaks, assets }) {
         onEnd: () => {
           avatar?.setMode("idle");
           ui?.setStatus("Siap mendengarkan");
+        },
+        onSpeechResult: (text) => {
+          isListening = false;
+          ui.setListening(false);
+          if (text) {
+            ui.setInputValue(text);
+            void sendMessage(text);
+          }
         },
       });
 
@@ -124,6 +134,25 @@ export function createGame({ mount, sdk, tweaks, assets }) {
       });
 
       ui.onSubmit((text) => void sendMessage(text));
+      ui.onMicClick(() => {
+        if (!voice.isMicSupported) {
+          ui.setStatus("Mikrofon tidak didukung browser ini");
+          return;
+        }
+        if (isListening) {
+          isListening = false;
+          voice.stopListen();
+          ui.setListening(false);
+          ui.setStatus("Siap mendengarkan");
+        } else {
+          isListening = true;
+          ui.setListening(true);
+          avatar?.setMode("thinking");
+          ui.setStatus("Mendengarkan suara Anda…", true);
+          voice.listen();
+        }
+      });
+
       ui.onSoundToggle(() => {
         soundEnabled = !soundEnabled;
         ui.setSoundEnabled(soundEnabled);
