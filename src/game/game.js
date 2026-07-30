@@ -66,15 +66,25 @@ export function createGame({ mount, sdk, tweaks, assets }) {
   }
 
   async function prepare() {
-    const backgroundUrl = assets?.get("TIKA_STUDIO_BG") ?? "/generated-assets/tika_studio_bg.webp";
+    let backgroundUrl = assets?.get("TIKA_STUDIO_BG") ?? "/generated-assets/tika_studio_bg.webp";
     try {
-      const [audio] = await Promise.all([
-        sdk.audio.getContext().catch(() => null),
-        loadImage(backgroundUrl),
-      ]);
+      const audio = await sdk.audio.getContext().catch(() => null);
       if (destroyed) return;
       audioHandle = audio;
       feedback = createAudioFeedback(audioHandle);
+
+      // Try loading primary background, fallback to /tika_studio_bg.webp or solid if missing
+      try {
+        await loadImage(backgroundUrl);
+      } catch {
+        try {
+          backgroundUrl = "/tika_studio_bg.webp";
+          await loadImage(backgroundUrl);
+        } catch {
+          backgroundUrl = ""; // Graceful fallback (solid dark gradient)
+        }
+      }
+
       ui.showReady(backgroundUrl);
       avatar = new AvatarScene(ui.canvasMount);
       ready = true;
