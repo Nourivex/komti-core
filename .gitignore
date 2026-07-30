@@ -1,0 +1,13 @@
+node_modules/
+.opencode/node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+# Keep the scratch dir in the repo, but never commit its contents.
+.playabl/*
+!.playabl/metadata.json
+!.playabl/tmp/
+.playabl/tmp/*
+!.playabl/tmp/.gitignore
